@@ -1,0 +1,45 @@
+<!doctype html>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<html>
+<head>
+  <h1>July 420</h1>
+</head>
+<span>
+<form method="POST">
+<input name="song" id="song" placeholder="Search for a song...">
+<input type="submit" name="submit_button" value="Search Song">
+<input name="band" id="band" placeholder="Search for a band...">
+<input type="submit" name="submit_button" value="Search Band">
+<input type="submit" name="submit_button" value="Reset">
+</form>
+</span>
+<body>
+<div class ="row">
+  <div class="column">
+  <h2>2020</h2>
+  <table>
+  {% for song in data_2020 %}
+    <tr>
+      <td> {{ song['Rank'] }} </td>
+      <td> {{ song['song'] }} </td>
+      <td> {{ song['band'] }} </td>
+    </tr>
+  {% endfor %}
+  </table>
+  </div>
+  <div class="column">
+  <h2>2021</h2>
+  <table>
+  {% for song in data_2021 %}
+  <tr>
+    <td> {{ song['Rank'] }} </td>
+    <td> {{ song['song'] }} </td>
+    <td> {{ song['band'] }} </td>
+  </tr>
+  {% endfor %}
+  </table>
+  </div>
+</div>
+
+</body>
+</html>
