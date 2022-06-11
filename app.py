@@ -20,18 +20,7 @@ def create_connection():
             ,detect_types=sqlite3.PARSE_DECLTYPES)
             conn.row_factory=sqlite3.Row
     return conn
-
-@app.route('/')
-def index():
-    conn = create_connection()
-    cursor=conn.cursor()
-
-    data_2020 = cursor.execute("""select * from july420 where year = '2020'""").fetchall()
-
-    data_2021 = cursor.execute("""select * from july420 where year = '2021'""").fetchall()
-
-    return render_template('index.html',data_2020=data_2020,data_2021=data_2021)
-
+    
 @app.route("/",methods=['POST'])
 def song_search():
     if request.method=='POST':
@@ -75,6 +64,15 @@ def song_search():
             data_2020 = cursor.execute("""select * from july420 where year = '2020'""").fetchall()
             data_2021 = cursor.execute("""select * from july420 where year = '2021'""").fetchall()
             return render_template('index.html',data_2020=data_2020,data_2021=data_2021)
+    else:
+        conn = create_connection()
+        cursor=conn.cursor()
+
+        data_2020 = cursor.execute("""select * from july420 where year = '2020'""").fetchall()
+
+        data_2021 = cursor.execute("""select * from july420 where year = '2021'""").fetchall()
+
+        return render_template('index.html',data_2020=data_2020,data_2021=data_2021)
 
 #might need this query later?
     # data_agg = cursor.execute("""select data_2020.Rank as Rank
