@@ -10,17 +10,21 @@ def create_connection():
     """ create a database connection to a SQLite database """
     conn = None
     try:
-        conn = sqlite3.connect("DB/july420.db"
+        conn = sqlite3.connect("/home/terrysey/july420/DB/july420.db"
         ,detect_types=sqlite3.PARSE_DECLTYPES)
         conn.row_factory=sqlite3.Row
+        return conn
+
     except Error as e:
-        #print(e)
+        print(e)
         try:
-            conn = sqlite3.connect("/home/terrysey/july420/DB/july420.db"
+            conn = sqlite3.connect("DB/july420.db"
             ,detect_types=sqlite3.PARSE_DECLTYPES)
             conn.row_factory=sqlite3.Row
-    return conn
-    
+            return conn
+        except Error as e:
+            print(e)
+
 @app.route("/",methods=['POST'])
 def song_search():
     if request.method=='POST':
