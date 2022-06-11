@@ -14,7 +14,11 @@ def create_connection():
         ,detect_types=sqlite3.PARSE_DECLTYPES)
         conn.row_factory=sqlite3.Row
     except Error as e:
-        print(e)
+        #print(e)
+        try:
+            conn = sqlite3.connect("/home/terrysey/july420/DB/july420.db"
+            ,detect_types=sqlite3.PARSE_DECLTYPES)
+            conn.row_factory=sqlite3.Row
     return conn
 
 @app.route('/')
