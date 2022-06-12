@@ -24,28 +24,31 @@ def create_connection():
         return conn
 
     except Error as e:
-        #print(e)
+        print(e)
         try:
             conn = sqlite3.connect("DB/july420.db"
             ,detect_types=sqlite3.PARSE_DECLTYPES)
             conn.row_factory=sqlite3.Row
             return conn
         except Error as e:
-            #print(e)
+            print(e)
 colormap = {'setosa': 'red', 'versicolor': 'green', 'virginica': 'blue'}
 colors = [colormap[x] for x in flowers['species']]
 
-def make_plot(x, y):
-    p = figure(title = "Iris Morphology", sizing_mode="fixed", width=400, height=400)
-    p.xaxis.axis_label = x
-    p.yaxis.axis_label = y
-    p.circle(flowers[x], flowers[y], color=colors, fill_alpha=0.2, size=10)
+def make_agg_plot(year):
+    conn = create_connection()
+    agg_sql = """select count(*) as volume
+                ,band
+                ,year
+        from july420
+        where year ='{}'
+        group by band, year
+        order by count(*) desc""".format(year)
+    df = pd.read_sql(agg_sql,conn)
+    p = figure(x_range=df['Band'].head(10), height=500, title="July 420 Top 10 Bands {}".format(year),toolbar_location=None, tools="")
+    p.vbar(x=df['Band'].head(10), top=df['volume'].head(10), width=0.9)
+    p.xaxis.major_label_orientation = math.pi/6
     return p
-# def make_plot(df):
-#     p = figure(x_range=df['Band'].head(10), height=500, title="July 420 Top 10 Bands 2020",toolbar_location=None, tools="")
-#     p.vbar(x=df['Band'].head(10), top=df['volume'].head(10), width=0.9)
-#     p.xaxis.major_label_orientation = math.pi/6
-#     return p
 @app.route('/')
 def index():
     conn = create_connection()
@@ -54,7 +57,7 @@ def index():
     data_2020 = cursor.execute("""select * from july420 where year = '2020'""").fetchall()
 
     data_2021 = cursor.execute("""select * from july420 where year = '2021'""").fetchall()
-    
+
     return render_template('index.html',data_2020=data_2020,data_2021=data_2021)
 
 @app.route("/",methods=['POST'])
@@ -112,18 +115,17 @@ def plot():
 
 @app.route('/myplot')
 def myplot():
-    # conn = create_connection()
-    # agg_sql = """select count(*) as volume
-    #             ,band
-    #             ,year
-    #     from july420
-    #     where year ='2020'
-    #     group by band, year
-    #     order by count(*) desc"""
-    # df = pd.read_sql(agg_sql,conn)
-    p = make_plot('petal_width', 'petal_length')
+
+    p = make_agg_plot('2020')
     #return p
-    return json.dumps(json_item(p))
+    return json.dumps(json_item(p,"myplot"))
+
+@app.route('/myplot2')
+def myplot2():
+
+    p = make_agg_plot('2021')
+    #return p
+    return json.dumps(json_item(p,"myplot2"))
 
 
 
