@@ -1,0 +1,58 @@
+<!doctype html>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<html>
+<head>
+<span>
+<h1>July 420 2022</h1>
+<a href="{{url_for('index')}}">Back</a>
+</head>
+<button class="open-button" onclick="openForm()">Add Song</button>
+<div class="form">
+<span>
+<form method="POST">
+<input type="text" name="song" id="song" placeholder="Search for a song...">
+<input class="btn" type="submit" name="submit_button" value="Search Song">
+<input type="text" name="band" id="band" placeholder="Search for a band...">
+<input class="btn" type="submit" name="submit_button" value="Search Band">
+<input class="btn" type="submit" name="submit_button" value="Reset">
+</form>
+</span>
+</div>
+<div class="form-popup" id="myForm">
+
+<form method="POST" class="form-container">
+<input type="text" name="songAdd" id="songAdd" placeholder="Add Song...">
+<input type="text" name="bandAdd" id="bandAdd" placeholder="Add Band...">
+<input type="text" name="rankAdd" id="rankAdd" placeholder="Add Rank...">
+<input type="submit" name="submit_button" value="Add" class="btn">
+<button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+
+</form>
+
+</div>
+
+
+<div class="row">
+<div class="column">
+<table>
+{% for song in data_2022 %}
+  <tr>
+    <td> {{ song['Rank'] }} </td>
+    <td> {{ song['song'] }} </td>
+    <td> {{ song['band'] }} </td>
+    <td><a class='action' href="{{ url_for('delete',Rank=song['Rank'])}}">Delete</a>
+  </tr>
+{% endfor %}
+</table>
+</div>
+</div>
+<script>
+  function openForm() {
+  document.getElementById("myForm").style.display = "block";
+}
+
+function closeForm() {
+  document.getElementById("myForm").style.display = "none";
+}
+</script>
+</html>

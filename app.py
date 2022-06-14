@@ -14,6 +14,7 @@ from flask import current_app, g
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, url_for
 )
+app.config['SECRET_KEY']='bb2f7df67e28dcfbeb850ae976fdaea6'
 def create_connection():
     """ create a database connection to a SQLite database """
     conn = None
@@ -107,6 +108,58 @@ def song_search():
             data_2021 = cursor.execute("""select * from july420 where year = '2021'""").fetchall()
 
             return render_template('index.html',data_2020=data_2020,data_2021=data_2021)
+
+@app.route('/2022')
+def twentytwentytwo():
+    conn=create_connection()
+    cursor=conn.cursor()
+    data_2022=cursor.execute("""select * from july420 where year='2022'""").fetchall()
+    return render_template('2022.html',data_2022=data_2022)
+
+@app.route('/2022',methods=['POST','GET'])
+def add_song():
+    conn=create_connection()
+    cursor=conn.cursor()
+    if request.method=='POST':
+
+        if request.form['submit_button'] == 'Add':
+            song=request.form['songAdd']
+            band=request.form['bandAdd']
+            rank=request.form['rankAdd']
+            print("{0} {1} {2}".format(song, band, rank))
+            try:
+                int(rank)
+            except ValueError:
+                print("rank not an int")
+                return redirect(url_for('twentytwentytwo'))
+            if int(rank) > 420 or int(rank) <0:
+                flash("Rank must be between 1 and 420")
+                print("not added")
+            else:
+                cursor.execute("""DELETE from july420 where rank='{}' and year='2022'""".format(rank))
+                conn.commit()
+                cursor.execute(
+                    'INSERT INTO july420 (song,band,rank,year)'
+                    ' VALUES (?, ?, ?, ?)',
+                    (song,band,rank,'2022')
+                )
+                print("added to db")
+                conn.commit()
+
+            return redirect(url_for('twentytwentytwo'))
+        elif request.form['submit_button'] == 'Reset':
+            return redirect(url_for('twentytwentytwo'))
+
+    return redirect(url_for('twentytwentytwo'))
+
+@app.route('/delete/<int:Rank>')
+def delete(Rank):
+    conn=create_connection()
+    cursor=conn.cursor()
+    cursor.execute("DELETE from july420 where rank= '{}' and year ='2022'".format(Rank))
+    conn.commit()
+    return redirect(url_for('twentytwentytwo'))
+
 
 
 @app.route('/plot')

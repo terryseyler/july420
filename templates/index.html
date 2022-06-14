@@ -5,18 +5,21 @@
 <head>
 <span>
   <h1>July 420</h1>
+  <h1> <a href="{{ url_for('twentytwentytwo') }}">2022</a></h1>
   <h1> <a href="{{ url_for('plot') }}">Plot</a></h1>
 </span>
 </head>
+<div class="form">
 <span>
 <form method="POST">
-<input name="song" id="song" placeholder="Search for a song...">
-<input type="submit" name="submit_button" value="Search Song">
-<input name="band" id="band" placeholder="Search for a band...">
-<input type="submit" name="submit_button" value="Search Band">
-<input type="submit" name="submit_button" value="Reset">
+<input type="text" name="song" id="song" placeholder="Search for a song...">
+<input class="btn" type="submit" name="submit_button" value="Search Song">
+<input type="text" name="band" id="band" placeholder="Search for a band...">
+<input class="btn" type="submit" name="submit_button" value="Search Band">
+<input class="btn" type="submit" name="submit_button" value="Reset">
 </form>
 </span>
+</div>
 <body>
 <div class ="row">
   <div class="column">
