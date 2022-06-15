@@ -1,6 +1,9 @@
+import requests
+from bs4 import BeautifulSoup
 from flask import Flask
 import sqlite3
 from sqlite3 import Error
+from sqlalchemy import create_engine
 import math
 from jinja2 import Template
 import json
@@ -16,29 +19,34 @@ from flask import (
 )
 #https://us.api.iheart.com/api/v3/live-meta/stream/2033/currentTrackMeta?defaultMetadata=true
 app.config['SECRET_KEY']='bb2f7df67e28dcfbeb850ae976fdaea6'
+
 def create_connection():
     """ create a database connection to a SQLite database """
     conn = None
     try:
-        conn = sqlite3.connect("/home/terrysey/july420/DB/july420.db"
+        file ="/home/terrysey/july420/DB/july420.db"
+        conn = sqlite3.connect(file
         ,detect_types=sqlite3.PARSE_DECLTYPES)
         conn.row_factory=sqlite3.Row
+        engine = create_engine("sqlite:///"+file)
         return conn
 
     except Error as e:
         print(e)
         try:
-            conn = sqlite3.connect("DB/july420.db"
+            file="DB/july420.db"
+            conn = sqlite3.connect(file
             ,detect_types=sqlite3.PARSE_DECLTYPES)
             conn.row_factory=sqlite3.Row
-            return conn
+            engine = create_engine("sqlite:///"+file)
+            return conn,engine
         except Error as e:
             print(e)
 colormap = {'setosa': 'red', 'versicolor': 'green', 'virginica': 'blue'}
 colors = [colormap[x] for x in flowers['species']]
 
 def make_agg_plot(year):
-    conn = create_connection()
+    conn,engine = create_connection()
     agg_sql = """select count(*) as volume
                 ,band
                 ,year
@@ -53,7 +61,7 @@ def make_agg_plot(year):
     return p
 @app.route('/')
 def index():
-    conn = create_connection()
+    conn,engine = create_connection()
     cursor=conn.cursor()
 
     data_2020 = cursor.execute("""select * from july420 where year = '2020'""").fetchall()
@@ -67,7 +75,7 @@ def song_search():
     if request.method=='POST':
         if request.form['submit_button'] == 'Search Song':
             song=request.form['song']
-            conn=create_connection()
+            conn,engine=create_connection()
             cursor=conn.cursor()
             data_2020=cursor.execute("""select *
                                         from july420
@@ -86,7 +94,7 @@ def song_search():
 
         elif request.form['submit_button'] == 'Search Band':
             band=request.form['band']
-            conn=create_connection()
+            conn,engine=create_connection()
             cursor=conn.cursor()
             data_2020=cursor.execute("""select *
                                         from july420
@@ -106,14 +114,15 @@ def song_search():
             return redirect(url_for('index'))
 @app.route('/2022')
 def twentytwentytwo():
-    conn=create_connection()
+    pull_songs()
+    conn,engine=create_connection()
     cursor=conn.cursor()
-    data_2022=cursor.execute("""select Song,Band,DateTime from july2022_d order by DateTime""").fetchall()
+    data_2022=cursor.execute("""select Song,Band,DateTime from july2022 order by DateTime desc""").fetchall()
     return render_template('2022.html',data_2022=data_2022)
 
 @app.route('/2022',methods=['POST','GET'])
 def add_song():
-    conn=create_connection()
+    conn,engine=create_connection()
     cursor=conn.cursor()
     if request.method=='POST':
 
@@ -170,7 +179,7 @@ def add_song():
 
 @app.route('/delete/<int:Rank>')
 def delete(Rank):
-    conn=create_connection()
+    conn,engine=create_connection()
     cursor=conn.cursor()
     cursor.execute("DELETE from july420 where rank= '{}' and year ='2022'".format(Rank))
     conn.commit()
@@ -196,3 +205,30 @@ def myplot2():
 def myplot3():
     p = make_agg_plot('2022')
     return json.dumps(json_item(p,"myplot3"))
+
+def pull_songs():
+    conn,engine=create_connection()
+    cursor=conn.cursor()
+
+    r = requests.get("https://1059thex.iheart.com/music/recently-played/", headers={'Cache-Control': 'no-cache'})
+
+    soup = BeautifulSoup(r.content, "html.parser")
+
+    track= [track.text for track in soup.find_all(class_="track-title")]
+    artist= [artist.text for artist in soup.find_all(class_="track-artist")]
+    album= [album.text for album in soup.find_all(class_="track-album")]
+    time=[time['datetime'] for time in soup.find_all(class_="component-datetime-display track-time")]
+
+    df = pd.DataFrame([track,artist,album,time]).transpose()
+    df.columns=['Song','Band','Album','DateTime']
+    df['DateTime'] = pd.to_datetime(df['DateTime'])
+
+    #df.sort_values(by='DateTime' ,inplace=True)
+    cursor.execute("DELETE FROM july2022_stage")
+    conn.commit()
+    df.to_sql("july2022_stage",engine,if_exists='append',index=False)
+    conn.commit()
+    cursor.execute("INSERT OR REPLACE INTO JULY2022 select * FROM july2022_stage")
+    conn.commit()
+    #conn.close()
+    r.close()
