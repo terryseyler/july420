@@ -3,7 +3,9 @@
 <html>
 <head>
 <span>
-<h1>July 420 2022</h1>
+{% for max_date in max_date %}
+<h1>July 420 2022 as of {{max_date['max_date']}}</h1>
+{% endfor %}
 <a href="{{url_for('index')}}">Back</a>
 </head>
 <!--<button class="open-button" onclick="openForm()">Add Song</button>-->
@@ -42,8 +44,8 @@
     <td> {{ song['Band'] }} </td>
     <td><a href="{{url_for('like',DateTime=song['DateTime'])}}">	&#128077; </a></td>
     <td> {{ song['LIKE'] }}</td>
-    <td> 	&#128078; </td>
-    <td> {{ song['DateTime'] }} </td>
+    <td><a href="{{url_for('dislike',DateTime=song['DateTime'])}}"> 	&#128078; </td>
+
   </tr>
 {% endfor %}
 </table>

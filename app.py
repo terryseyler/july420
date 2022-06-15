@@ -117,8 +117,9 @@ def twentytwentytwo():
     pull_songs()
     conn,engine=create_connection()
     cursor=conn.cursor()
-    data_2022=cursor.execute("""select Song,Band,DateTime,LIKE from july2022 order by DateTime desc""").fetchall()
-    return render_template('2022.html',data_2022=data_2022)
+    data_2022=cursor.execute("""select Song,Band,datetime(DateTime) as DateTime_Fixed,DateTime,LIKE from july2022 order by DateTime desc""").fetchall()
+    max_date = cursor.execute("select datetime(max(DateTime)) as max_date from july2022").fetchall()
+    return render_template('2022.html',data_2022=data_2022,max_date=max_date)
 
 @app.route('/2022',methods=['POST','GET'])
 def add_song():
@@ -156,10 +157,9 @@ def add_song():
         elif request.form['submit_button'] == 'Search Song':
             song=request.form['song']
             data_2022=cursor.execute("""select *
-                                        from july420
-                                        where Year = '2022'
-                                        and Song like '%{0}%'
-                                        order by Rank
+                                        from july2022
+                                        where Song like '%{0}%'
+                                        order by DateTime
                                         """.format(song)
                                         ).fetchall()
 
@@ -168,10 +168,9 @@ def add_song():
         elif request.form['submit_button'] == 'Search Band':
             band=request.form['band']
             data_2022=cursor.execute("""select *
-                                        from july420
-                                        where Year = '2022'
-                                        and Band like '%{0}%'
-                                        order by Rank
+                                        from july2022
+                                        where Band like '%{0}%'
+                                        order by DateTime
                                         """.format(band)
                                         ).fetchall()
             return render_template('2022.html',data_2022=data_2022)
@@ -191,6 +190,16 @@ def like(DateTime):
     cursor=conn.cursor()
     print(DateTime.replace('%',' '))
     cursor.execute("UPDATE july2022 set like = like + 1 where DateTime='{}'".format(DateTime.replace('%',' ')))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('twentytwentytwo'))
+
+@app.route('/dislike/<DateTime>',methods=('GET','POST'))
+def dislike(DateTime):
+    conn,engine=create_connection()
+    cursor=conn.cursor()
+    print(DateTime.replace('%',' '))
+    cursor.execute("UPDATE july2022 set like = like - 1 where DateTime='{}'".format(DateTime.replace('%',' ')))
     conn.commit()
     conn.close()
     return redirect(url_for('twentytwentytwo'))
@@ -236,7 +245,8 @@ def pull_songs():
     conn.commit()
     df.to_sql("july2022_stage",engine,if_exists='append',index=False)
     conn.commit()
-    cursor.execute("INSERT OR REPLACE INTO july2022 select *,0 as LIKE FROM july2022_stage")
+    cursor.execute("INSERT OR IGNORE INTO july2022 select *,0 as LIKE FROM july2022_stage")
     conn.commit()
     conn.close()
     r.close()
+    del r
