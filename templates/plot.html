@@ -8,13 +8,15 @@
       Bokeh.set_log_level("info");
   </script>
   </head>
-
+<a href="{{url_for('index')}}">Back</a>
   <body>
 
-  <div class ="row">
-    <div class="column" id="myplot"></div>
-    <div class="column" id="myplot2"></div>
-  </div>
+
+    <div id="myplot"></div>
+    <div id="myplot3"></div>
+    <div id="myplot2"></div>
+
+
     <script>
     fetch('/myplot')
       .then(function(response) { return response.json(); })
@@ -22,6 +24,11 @@
     </script>
     <script>
     fetch('/myplot2')
+      .then(function(response) { return response.json(); })
+      .then(function(item) { return Bokeh.embed.embed_item(item, "myplot2"); })
+    </script>
+    <script>
+    fetch('/myplot3')
       .then(function(response) { return response.json(); })
       .then(function(item) { return Bokeh.embed.embed_item(item, "myplot2"); })
     </script>

@@ -1,6 +1,9 @@
+import requests
+from bs4 import BeautifulSoup
 from flask import Flask
 import sqlite3
 from sqlite3 import Error
+from sqlalchemy import create_engine
 import math
 from jinja2 import Template
 import json
@@ -14,29 +17,36 @@ from flask import current_app, g
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, url_for
 )
+#https://us.api.iheart.com/api/v3/live-meta/stream/2033/currentTrackMeta?defaultMetadata=true
+app.config['SECRET_KEY']='bb2f7df67e28dcfbeb850ae976fdaea6'
+
 def create_connection():
     """ create a database connection to a SQLite database """
     conn = None
     try:
-        conn = sqlite3.connect("/home/terrysey/july420/DB/july420.db"
+        file ="/home/terrysey/july420/DB/july420.db"
+        conn = sqlite3.connect(file
         ,detect_types=sqlite3.PARSE_DECLTYPES)
         conn.row_factory=sqlite3.Row
+        engine = create_engine("sqlite:///"+file)
         return conn
 
     except Error as e:
         print(e)
         try:
-            conn = sqlite3.connect("DB/july420.db"
+            file="DB/july420.db"
+            conn = sqlite3.connect(file
             ,detect_types=sqlite3.PARSE_DECLTYPES)
             conn.row_factory=sqlite3.Row
-            return conn
+            engine = create_engine("sqlite:///"+file)
+            return conn,engine
         except Error as e:
             print(e)
 colormap = {'setosa': 'red', 'versicolor': 'green', 'virginica': 'blue'}
 colors = [colormap[x] for x in flowers['species']]
 
 def make_agg_plot(year):
-    conn = create_connection()
+    conn,engine = create_connection()
     agg_sql = """select count(*) as volume
                 ,band
                 ,year
@@ -51,7 +61,7 @@ def make_agg_plot(year):
     return p
 @app.route('/')
 def index():
-    conn = create_connection()
+    conn,engine = create_connection()
     cursor=conn.cursor()
 
     data_2020 = cursor.execute("""select * from july420 where year = '2020'""").fetchall()
@@ -65,7 +75,7 @@ def song_search():
     if request.method=='POST':
         if request.form['submit_button'] == 'Search Song':
             song=request.form['song']
-            conn=create_connection()
+            conn,engine=create_connection()
             cursor=conn.cursor()
             data_2020=cursor.execute("""select *
                                         from july420
@@ -84,7 +94,7 @@ def song_search():
 
         elif request.form['submit_button'] == 'Search Band':
             band=request.form['band']
-            conn=create_connection()
+            conn,engine=create_connection()
             cursor=conn.cursor()
             data_2020=cursor.execute("""select *
                                         from july420
@@ -101,13 +111,98 @@ def song_search():
 
             return render_template('index.html',data_2020=data_2020,data_2021=data_2021)
         if request.form['submit_button'] == 'Reset':
-            conn = create_connection()
-            cursor=conn.cursor()
-            data_2020 = cursor.execute("""select * from july420 where year = '2020'""").fetchall()
-            data_2021 = cursor.execute("""select * from july420 where year = '2021'""").fetchall()
+            return redirect(url_for('index'))
+@app.route('/2022')
+def twentytwentytwo():
+    pull_songs()
+    conn,engine=create_connection()
+    cursor=conn.cursor()
+    data_2022=cursor.execute("""select Song,Band,datetime(DateTime) as DateTime_Fixed,DateTime,LIKE from july2022 order by DateTime desc""").fetchall()
+    max_date = cursor.execute("select datetime(max(DateTime)) as max_date from july2022").fetchall()
+    return render_template('2022.html',data_2022=data_2022,max_date=max_date)
 
-            return render_template('index.html',data_2020=data_2020,data_2021=data_2021)
+@app.route('/2022',methods=['POST','GET'])
+def add_song():
+    conn,engine=create_connection()
+    cursor=conn.cursor()
+    if request.method=='POST':
 
+        if request.form['submit_button'] == 'Add':
+            song=request.form['songAdd']
+            band=request.form['bandAdd']
+            rank=request.form['rankAdd']
+            print("{0} {1} {2}".format(song, band, rank))
+            try:
+                int(rank)
+            except ValueError:
+                print("rank not an int")
+                return redirect(url_for('twentytwentytwo'))
+            if int(rank) > 420 or int(rank) <0:
+                flash("Rank must be between 1 and 420")
+                print("not added")
+            else:
+                cursor.execute("""DELETE from july420 where rank='{}' and year='2022'""".format(rank))
+                conn.commit()
+                cursor.execute(
+                    'INSERT INTO july420 (song,band,rank,year)'
+                    ' VALUES (?, ?, ?, ?)',
+                    (song,band,rank,'2022')
+                )
+                print("added to db")
+                conn.commit()
+
+            return redirect(url_for('twentytwentytwo'))
+        elif request.form['submit_button'] == 'Reset':
+            return redirect(url_for('twentytwentytwo'))
+        elif request.form['submit_button'] == 'Search Song':
+            song=request.form['song']
+            data_2022=cursor.execute("""select *
+                                        from july2022
+                                        where Song like '%{0}%'
+                                        order by DateTime
+                                        """.format(song)
+                                        ).fetchall()
+
+            return render_template('2022.html',data_2022=data_2022)
+
+        elif request.form['submit_button'] == 'Search Band':
+            band=request.form['band']
+            data_2022=cursor.execute("""select *
+                                        from july2022
+                                        where Band like '%{0}%'
+                                        order by DateTime
+                                        """.format(band)
+                                        ).fetchall()
+            return render_template('2022.html',data_2022=data_2022)
+    return redirect(url_for('twentytwentytwo'))
+
+@app.route('/delete/<int:Rank>')
+def delete(Rank):
+    conn,engine=create_connection()
+    cursor=conn.cursor()
+    cursor.execute("DELETE from july420 where rank= '{}' and year ='2022'".format(Rank))
+    conn.commit()
+    return redirect(url_for('twentytwentytwo'))
+
+@app.route('/like/<DateTime>',methods=('GET','POST'))
+def like(DateTime):
+    conn,engine=create_connection()
+    cursor=conn.cursor()
+    print(DateTime.replace('%',' '))
+    cursor.execute("UPDATE july2022 set like = like + 1 where DateTime='{}'".format(DateTime.replace('%',' ')))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('twentytwentytwo'))
+
+@app.route('/dislike/<DateTime>',methods=('GET','POST'))
+def dislike(DateTime):
+    conn,engine=create_connection()
+    cursor=conn.cursor()
+    print(DateTime.replace('%',' '))
+    cursor.execute("UPDATE july2022 set like = like - 1 where DateTime='{}'".format(DateTime.replace('%',' ')))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('twentytwentytwo'))
 
 @app.route('/plot')
 def plot():
@@ -115,30 +210,43 @@ def plot():
 
 @app.route('/myplot')
 def myplot():
-
     p = make_agg_plot('2020')
-    #return p
     return json.dumps(json_item(p,"myplot"))
 
 @app.route('/myplot2')
 def myplot2():
-
     p = make_agg_plot('2021')
-    #return p
     return json.dumps(json_item(p,"myplot2"))
 
+@app.route('/myplot3')
+def myplot3():
+    p = make_agg_plot('2022')
+    return json.dumps(json_item(p,"myplot3"))
 
+def pull_songs():
+    conn,engine=create_connection()
+    cursor=conn.cursor()
 
+    r = requests.get("https://1059thex.iheart.com/music/recently-played/", headers={'Cache-Control': 'no-cache'})
 
-#might need this query later?
-    # data_agg = cursor.execute("""select data_2020.Rank as Rank
-    #                             ,data_2020.Song as song_2020
-    #                             ,data_2020.Band as band_2020
-    #                             ,data_2021.Song as song_2021
-    #                             ,data_2021.Band as band_2021
-    #                             from
-    #                                 (select * from july420 where year='2020') as data_2020
-    #                             inner JOIN
-    #                                 (select * from july420 where year='2021') as data_2021
-    #                             on data_2020.Rank = data_2021.Rank
-    #                             """).fetchall()
+    soup = BeautifulSoup(r.content, "html.parser")
+
+    track= [track.text for track in soup.find_all(class_="track-title")]
+    artist= [artist.text for artist in soup.find_all(class_="track-artist")]
+    album= [album.text for album in soup.find_all(class_="track-album")]
+    time=[time['datetime'] for time in soup.find_all(class_="component-datetime-display track-time")]
+
+    df = pd.DataFrame([track,artist,album,time]).transpose()
+    df.columns=['Song','Band','Album','DateTime']
+    df['DateTime'] = pd.to_datetime(df['DateTime'])
+
+    #df.sort_values(by='DateTime' ,inplace=True)
+    cursor.execute("DELETE FROM july2022_stage")
+    conn.commit()
+    df.to_sql("july2022_stage",engine,if_exists='append',index=False)
+    conn.commit()
+    cursor.execute("INSERT OR IGNORE INTO july2022 select *,0 as LIKE FROM july2022_stage")
+    conn.commit()
+    conn.close()
+    r.close()
+    del r
