@@ -40,6 +40,9 @@
     <td> {{ song['Rank'] }} </td>
     <td> {{ song['Song'] }} </td>
     <td> {{ song['Band'] }} </td>
+    <td><a href="{{url_for('like',DateTime=song['DateTime'])}}">	&#128077; </a></td>
+    <td> {{ song['LIKE'] }}</td>
+    <td> 	&#128078; </td>
     <td> {{ song['DateTime'] }} </td>
   </tr>
 {% endfor %}

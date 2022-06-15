@@ -117,7 +117,7 @@ def twentytwentytwo():
     pull_songs()
     conn,engine=create_connection()
     cursor=conn.cursor()
-    data_2022=cursor.execute("""select Song,Band,DateTime from july2022 order by DateTime desc""").fetchall()
+    data_2022=cursor.execute("""select Song,Band,DateTime,LIKE from july2022 order by DateTime desc""").fetchall()
     return render_template('2022.html',data_2022=data_2022)
 
 @app.route('/2022',methods=['POST','GET'])
@@ -185,7 +185,15 @@ def delete(Rank):
     conn.commit()
     return redirect(url_for('twentytwentytwo'))
 
-
+@app.route('/like/<DateTime>',methods=('GET','POST'))
+def like(DateTime):
+    conn,engine=create_connection()
+    cursor=conn.cursor()
+    print(DateTime.replace('%',' '))
+    cursor.execute("UPDATE july2022 set like = like + 1 where DateTime='{}'".format(DateTime.replace('%',' ')))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('twentytwentytwo'))
 
 @app.route('/plot')
 def plot():
@@ -228,7 +236,7 @@ def pull_songs():
     conn.commit()
     df.to_sql("july2022_stage",engine,if_exists='append',index=False)
     conn.commit()
-    cursor.execute("INSERT OR REPLACE INTO JULY2022 select * FROM july2022_stage")
+    cursor.execute("INSERT OR REPLACE INTO july2022 select *,0 as LIKE FROM july2022_stage")
     conn.commit()
-    #conn.close()
+    conn.close()
     r.close()
