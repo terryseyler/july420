@@ -108,7 +108,7 @@ def song_search():
 def twentytwentytwo():
     conn=create_connection()
     cursor=conn.cursor()
-    data_2022=cursor.execute("""select * from jul2022 order by DateTime Desc""").fetchall()
+    data_2022=cursor.execute("""select Song,Band,DateTime from july2022_d order by DateTime""").fetchall()
     return render_template('2022.html',data_2022=data_2022)
 
 @app.route('/2022',methods=['POST','GET'])
