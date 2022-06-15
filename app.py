@@ -14,6 +14,7 @@ from flask import current_app, g
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, url_for
 )
+#https://us.api.iheart.com/api/v3/live-meta/stream/2033/currentTrackMeta?defaultMetadata=true
 app.config['SECRET_KEY']='bb2f7df67e28dcfbeb850ae976fdaea6'
 def create_connection():
     """ create a database connection to a SQLite database """
@@ -102,18 +103,12 @@ def song_search():
 
             return render_template('index.html',data_2020=data_2020,data_2021=data_2021)
         if request.form['submit_button'] == 'Reset':
-            conn = create_connection()
-            cursor=conn.cursor()
-            data_2020 = cursor.execute("""select * from july420 where year = '2020'""").fetchall()
-            data_2021 = cursor.execute("""select * from july420 where year = '2021'""").fetchall()
-
-            return render_template('index.html',data_2020=data_2020,data_2021=data_2021)
-
+            return redirect(url_for('index'))
 @app.route('/2022')
 def twentytwentytwo():
     conn=create_connection()
     cursor=conn.cursor()
-    data_2022=cursor.execute("""select * from july420 where year='2022'""").fetchall()
+    data_2022=cursor.execute("""select * from july420 where year='2022' order by rank""").fetchall()
     return render_template('2022.html',data_2022=data_2022)
 
 @app.route('/2022',methods=['POST','GET'])
@@ -149,7 +144,28 @@ def add_song():
             return redirect(url_for('twentytwentytwo'))
         elif request.form['submit_button'] == 'Reset':
             return redirect(url_for('twentytwentytwo'))
+        elif request.form['submit_button'] == 'Search Song':
+            song=request.form['song']
+            data_2022=cursor.execute("""select *
+                                        from july420
+                                        where Year = '2022'
+                                        and Song like '%{0}%'
+                                        order by Rank
+                                        """.format(song)
+                                        ).fetchall()
 
+            return render_template('2022.html',data_2022=data_2022)
+
+        elif request.form['submit_button'] == 'Search Band':
+            band=request.form['band']
+            data_2022=cursor.execute("""select *
+                                        from july420
+                                        where Year = '2022'
+                                        and Band like '%{0}%'
+                                        order by Rank
+                                        """.format(band)
+                                        ).fetchall()
+            return render_template('2022.html',data_2022=data_2022)
     return redirect(url_for('twentytwentytwo'))
 
 @app.route('/delete/<int:Rank>')
@@ -168,30 +184,15 @@ def plot():
 
 @app.route('/myplot')
 def myplot():
-
     p = make_agg_plot('2020')
-    #return p
     return json.dumps(json_item(p,"myplot"))
 
 @app.route('/myplot2')
 def myplot2():
-
     p = make_agg_plot('2021')
-    #return p
     return json.dumps(json_item(p,"myplot2"))
 
-
-
-
-#might need this query later?
-    # data_agg = cursor.execute("""select data_2020.Rank as Rank
-    #                             ,data_2020.Song as song_2020
-    #                             ,data_2020.Band as band_2020
-    #                             ,data_2021.Song as song_2021
-    #                             ,data_2021.Band as band_2021
-    #                             from
-    #                                 (select * from july420 where year='2020') as data_2020
-    #                             inner JOIN
-    #                                 (select * from july420 where year='2021') as data_2021
-    #                             on data_2020.Rank = data_2021.Rank
-    #                             """).fetchall()
+@app.route('/myplot3')
+def myplot3():
+    p = make_agg_plot('2022')
+    return json.dumps(json_item(p,"myplot3"))
