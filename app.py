@@ -17,6 +17,7 @@ from flask import current_app, g
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, url_for
 )
+from datetime import datetime
 #https://us.api.iheart.com/api/v3/live-meta/stream/2033/currentTrackMeta?defaultMetadata=true
 app.config['SECRET_KEY']='bb2f7df67e28dcfbeb850ae976fdaea6'
 
@@ -29,7 +30,7 @@ def create_connection():
         ,detect_types=sqlite3.PARSE_DECLTYPES)
         conn.row_factory=sqlite3.Row
         engine = create_engine("sqlite:///"+file)
-        return conn
+        return conn,engine
 
     except Error as e:
         print(e)
@@ -114,11 +115,21 @@ def song_search():
             return redirect(url_for('index'))
 @app.route('/2022')
 def twentytwentytwo():
-    pull_songs()
     conn,engine=create_connection()
     cursor=conn.cursor()
-    data_2022=cursor.execute("""select Song,Band,datetime(DateTime) as DateTime_Fixed,DateTime,LIKE from july2022 order by DateTime desc""").fetchall()
-    max_date = cursor.execute("select datetime(max(DateTime)) as max_date from july2022").fetchall()
+    #max_date = cursor.execute("select datetime(last_updated) as max_date from july2022 limit 1").fetchall()
+    #print("max date is {}".format(max_date[0][0]))
+    #print("now is {}".format(datetime.now()))
+    #time_obj = datetime.strptime(max_date[0][0],"%Y-%m-%d %H:%M:%S")
+    #dif = datetime.now() - time_obj
+    #if (dif.total_seconds()/60) > 3:
+        #print("Greater than 3 minutes, pulling data")
+        #pull_songs()
+    #else:
+        #print("data up to date")
+
+    data_2022=cursor.execute("""select Song,Band,datetime(DateTime,'-4 hours') as DateTime_Fixed,DateTime,LIKE from july2022 order by DateTime desc""").fetchall()
+    max_date = cursor.execute("select datetime(max(DateTime),'-4 hours') as max_date from july2022").fetchall()
     return render_template('2022.html',data_2022=data_2022,max_date=max_date)
 
 @app.route('/2022',methods=['POST','GET'])
@@ -227,7 +238,7 @@ def pull_songs():
     conn,engine=create_connection()
     cursor=conn.cursor()
 
-    r = requests.get("https://1059thex.iheart.com/music/recently-played/", headers={'Cache-Control': 'no-cache'})
+    r = requests.get("https://1059thex.iheart.com/music/recently-played/", headers={"Cache-Control": "no-cache","Pragma": "no-cache"})
 
     soup = BeautifulSoup(r.content, "html.parser")
 
@@ -245,7 +256,8 @@ def pull_songs():
     conn.commit()
     df.to_sql("july2022_stage",engine,if_exists='append',index=False)
     conn.commit()
-    cursor.execute("INSERT OR IGNORE INTO july2022 select *,0 as LIKE FROM july2022_stage")
+    cursor.execute("INSERT OR IGNORE INTO july2022 select *,0 as LIKE,'filler' as last_updated FROM july2022_stage")
+    conn.execute("update july2022 set last_updated ='{}'".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")))
     conn.commit()
     conn.close()
     r.close()
