@@ -127,7 +127,6 @@ def twentytwentytwo():
         #pull_songs()
     #else:
         #print("data up to date")
-
     data_2022=cursor.execute("""select Song,Band,datetime(DateTime,'-4 hours') as DateTime_Fixed,DateTime,LIKE from july2022 order by DateTime desc""").fetchall()
     max_date = cursor.execute("select datetime(max(DateTime),'-4 hours') as max_date from july2022").fetchall()
     return render_template('2022.html',data_2022=data_2022,max_date=max_date)
