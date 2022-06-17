@@ -48,13 +48,21 @@ colors = [colormap[x] for x in flowers['species']]
 
 def make_agg_plot(year):
     conn,engine = create_connection()
-    agg_sql = """select count(*) as volume
-                ,band
-                ,year
-        from july420
-        where year ='{}'
-        group by band, year
-        order by count(*) desc""".format(year)
+    if year =='2022':
+        agg_sql="""select count(*) as volume
+                    ,band
+                    from july2022
+                    group by band
+                    order by count(*) desc
+                """
+    else:
+        agg_sql = """select count(*) as volume
+                    ,band
+                    ,year
+            from july420
+            where year ='{0}'
+            group by band
+            order by count(*) desc""".format(year)
     df = pd.read_sql(agg_sql,conn)
     p = figure(x_range=df['Band'].head(10), height=500, title="July 420 Top 10 Bands {}".format(year),toolbar_location=None, tools="")
     p.vbar(x=df['Band'].head(10), top=df['volume'].head(10), width=0.9)
