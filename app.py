@@ -118,7 +118,7 @@ def song_search():
 def twentytwentytwo():
     conn,engine=create_connection()
     cursor=conn.cursor()
-    #max_date = cursor.execute("select datetime(last_updated) as max_date from july2022 limit 1").fetchall()
+
     #print("max date is {}".format(max_date[0][0]))
     #print("now is {}".format(datetime.now()))
     #time_obj = datetime.strptime(max_date[0][0],"%Y-%m-%d %H:%M:%S")
@@ -128,9 +128,9 @@ def twentytwentytwo():
         #pull_songs()
     #else:
         #print("data up to date")
-    distinct_dates = cursor.execute("select distinct date(datetime) as distinct_date from july2022 order by datetime desc").fetchall()
-    data_2022=cursor.execute("""select DateTime,time(datetime) as song_time,Song,Band,datetime(DateTime,'-4 hours') as DateTime_Fixed,date(DateTime) as DatePart,LIKE from july2022 order by DateTime desc""").fetchall()
-    #max_date = cursor.execute("select datetime(max(DateTime),'-4 hours') as max_date from july2022").fetchall()
+    distinct_dates = cursor.execute("select distinct date(datetime(datetime,'-4 hours')) as distinct_date from july2022 order by datetime desc").fetchall()
+    data_2022=cursor.execute("""select DateTime,time(datetime(datetime,'-4 hours')) as song_time,Song,Band,datetime(DateTime,'-4 hours') as DateTime_Fixed,date(datetime(DateTime,'-4 hours')) as DatePart,LIKE from july2022 order by DateTime desc""").fetchall()
+
     return render_template('2022.html',data_2022=data_2022,distinct_dates=distinct_dates)
 
 @app.route('/2022',methods=['POST','GET'])
@@ -168,24 +168,48 @@ def add_song():
             return redirect(url_for('twentytwentytwo'))
         elif request.form['submit_button'] == 'Search Song':
             song=request.form['song']
-            data_2022=cursor.execute("""select *
-                                        from july2022
+            distinct_dates = cursor.execute("""select distinct
+                                            date(datetime(datetime,'-4 hours')) as distinct_date
+                                            from july2022
+                                            where Song like '%{0}%'
+                                            order by datetime desc""".format(song)
+                                            ).fetchall()
+            data_2022=cursor.execute("""select DateTime
+                                            ,time(datetime(datetime,'-4 hours')) as song_time
+                                            ,Song
+                                            ,Band
+                                            ,datetime(DateTime,'-4 hours') as DateTime_Fixed
+                                            ,date(datetime(DateTime,'-4 hours')) as DatePart
+                                            ,LIKE
+                                            from july2022
                                         where Song like '%{0}%'
-                                        order by DateTime
+                                        order by DateTime desc
                                         """.format(song)
                                         ).fetchall()
 
-            return render_template('2022.html',data_2022=data_2022)
+            return render_template('2022.html',data_2022=data_2022,distinct_dates=distinct_dates)
 
         elif request.form['submit_button'] == 'Search Band':
             band=request.form['band']
-            data_2022=cursor.execute("""select *
-                                        from july2022
+            distinct_dates = cursor.execute("""select distinct
+                                date(datetime(datetime,'-4 hours')) as distinct_date
+                                from july2022
+                                where Band like '%{0}%'
+                                order by datetime desc""".format(band)
+                                ).fetchall()
+            data_2022=cursor.execute("""select DateTime
+                                            ,time(datetime(datetime,'-4 hours')) as song_time
+                                            ,Song
+                                            ,Band
+                                            ,datetime(DateTime,'-4 hours') as DateTime_Fixed
+                                            ,date(datetime(DateTime,'-4 hours')) as DatePart
+                                            ,LIKE
+                                            from july2022
                                         where Band like '%{0}%'
-                                        order by DateTime
+                                        order by DateTime desc
                                         """.format(band)
                                         ).fetchall()
-            return render_template('2022.html',data_2022=data_2022)
+            return render_template('2022.html',data_2022=data_2022,distinct_dates=distinct_dates)
     return redirect(url_for('twentytwentytwo'))
 
 @app.route('/delete/<int:Rank>')
