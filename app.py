@@ -113,6 +113,7 @@ def song_search():
             return render_template('index.html',data_2020=data_2020,data_2021=data_2021)
         if request.form['submit_button'] == 'Reset':
             return redirect(url_for('index'))
+
 @app.route('/2022')
 def twentytwentytwo():
     conn,engine=create_connection()
@@ -127,9 +128,10 @@ def twentytwentytwo():
         #pull_songs()
     #else:
         #print("data up to date")
-    data_2022=cursor.execute("""select Song,Band,datetime(DateTime,'-4 hours') as DateTime_Fixed,DateTime,LIKE from july2022 order by DateTime desc""").fetchall()
-    max_date = cursor.execute("select datetime(max(DateTime),'-4 hours') as max_date from july2022").fetchall()
-    return render_template('2022.html',data_2022=data_2022,max_date=max_date)
+    distinct_dates = cursor.execute("select distinct date(datetime) as distinct_date from july2022 order by datetime desc").fetchall()
+    data_2022=cursor.execute("""select DateTime,time(datetime) as song_time,Song,Band,datetime(DateTime,'-4 hours') as DateTime_Fixed,date(DateTime) as DatePart,LIKE from july2022 order by DateTime desc""").fetchall()
+    #max_date = cursor.execute("select datetime(max(DateTime),'-4 hours') as max_date from july2022").fetchall()
+    return render_template('2022.html',data_2022=data_2022,distinct_dates=distinct_dates)
 
 @app.route('/2022',methods=['POST','GET'])
 def add_song():

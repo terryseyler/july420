@@ -36,19 +36,24 @@
 
 <div class="row">
 <div class="column">
+{% for distinct_date in distinct_dates %}
+<h1>{{ distinct_date['distinct_date'] }} </h1>
 <table>
 {% for song in data_2022 %}
+{% if song['DatePart'] == distinct_date['distinct_date'] %}
   <tr>
-    <td> {{ song['Rank'] }} </td>
     <td> {{ song['Song'] }} </td>
+    <td> {{ song['song_time'] }} </td>
     <td> {{ song['Band'] }} </td>
     <td><a href="{{url_for('like',DateTime=song['DateTime'])}}">	&#128077; </a></td>
     <td> {{ song['LIKE'] }}</td>
     <td><a href="{{url_for('dislike',DateTime=song['DateTime'])}}"> 	&#128078; </td>
 
   </tr>
+{% endif %}
 {% endfor %}
 </table>
+{% endfor %}
 </div>
 </div>
 <script>
