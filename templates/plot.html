@@ -13,6 +13,7 @@
 
 
     <div id="myplot3"></div>
+    <div id="myplot4"></div>
     <div id="myplot2"></div>
     <div id="myplot"></div>
 
@@ -31,5 +32,10 @@
     fetch('/myplot3')
       .then(function(response) { return response.json(); })
       .then(function(item) { return Bokeh.embed.embed_item(item, "myplot3"); })
+    </script>
+    <script>
+    fetch('/myplot4')
+      .then(function(response) { return response.json(); })
+      .then(function(item) { return Bokeh.embed.embed_item(item, "myplot4"); })
     </script>
   </body>

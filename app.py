@@ -48,13 +48,24 @@ colors = [colormap[x] for x in flowers['species']]
 
 def make_agg_plot(year):
     conn,engine = create_connection()
-    if year =='2022':
+    if year =='today':
         agg_sql="""select count(*) as volume
                     ,band
                     from july2022
+                    where date(datetime(datetime,'-4 hours'))= (select max(date(datetime(datetime,'-4 hours'))) from july2022)
                     group by band
                     order by count(*) desc
                 """
+        title = 'Top 10 bands played for today'
+    elif year =='yesterday':
+        agg_sql="""select count(*) as volume
+                    ,band
+                    from july2022
+                    where date(datetime(datetime,'-4 hours'))= (select date(max(date(datetime(datetime,'-4 hours'))),'-1 day') from july2022)
+                    group by band
+                    order by count(*) desc
+                """
+        title = 'Top 10 bands played for yesterday'
     else:
         agg_sql = """select count(*) as volume
                     ,band
@@ -63,10 +74,11 @@ def make_agg_plot(year):
             where year ='{0}'
             group by band
             order by count(*) desc""".format(year)
+        title = "July 420 Top 10 Bands for {}".format(year)
     df = pd.read_sql(agg_sql,conn)
-    p = figure(x_range=df['Band'].head(10), height=500, title="July 420 Top 10 Bands {}".format(year),toolbar_location=None, tools="")
+    p = figure(x_range=df['Band'].head(10), height=500, title=title,toolbar_location=None, tools="")
     p.vbar(x=df['Band'].head(10), top=df['volume'].head(10), width=0.9)
-    p.xaxis.major_label_orientation = math.pi/6
+    p.xaxis.major_label_orientation = math.pi/4
     return p
 @app.route('/')
 def index():
@@ -264,8 +276,13 @@ def myplot2():
 
 @app.route('/myplot3')
 def myplot3():
-    p = make_agg_plot('2022')
+    p = make_agg_plot('today')
     return json.dumps(json_item(p,"myplot3"))
+
+@app.route('/myplot4')
+def myplot4():
+    p = make_agg_plot('yesterday')
+    return json.dumps(json_item(p,"myplot4"))
 
 def pull_songs():
     conn,engine=create_connection()
