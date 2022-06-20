@@ -93,7 +93,7 @@ def index():
                     ,datetime(datetime,'-4 hours') as datetime
                     ,ROW_NUMBER() OVER (ORDER BY datetime desc) as Rank
                     from july2022
-                    where datetime(datetime,'-4 hours') between '2021-07-01 10:00:00' and '2022-07-01 19:00:00'
+                    where datetime(datetime,'-4 hours') between '2022-07-01 10:00:00' and '2022-07-01 19:00:00'
                         or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
                         or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
                         or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
@@ -129,7 +129,7 @@ def song_search():
                             ,datetime(datetime,'-4 hours') as datetime
                             ,ROW_NUMBER() OVER (ORDER BY datetime desc) as Rank
                             from july2022
-                            where (datetime(datetime,'-4 hours') between '2021-07-01 10:00:00' and '2022-07-01 19:00:00'
+                            where (datetime(datetime,'-4 hours') between '2022-07-01 10:00:00' and '2022-07-01 19:00:00'
                                 or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
                                 or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
                                 or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
@@ -167,7 +167,7 @@ def song_search():
                             ,datetime(datetime,'-4 hours') as datetime
                             ,ROW_NUMBER() OVER (ORDER BY datetime desc) as Rank
                             from july2022
-                            where (datetime(datetime,'-4 hours') between '2021-07-01 10:00:00' and '2022-07-01 19:00:00'
+                            where (datetime(datetime,'-4 hours') between '2022-07-01 10:00:00' and '2022-07-01 19:00:00'
                                 or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
                                 or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
                                 or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'

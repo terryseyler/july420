@@ -46,10 +46,13 @@
     <td> {{ song['band'] }} </td>
   </tr>
   {% endfor %}
+
   </table>
   </div>
+  {% if data_2022 %}
   <div class="column">
   <h2>2022</h2>
+
   <table>
   {% for song in data_2022 %}
   <tr>
@@ -60,6 +63,7 @@
   {% endfor %}
   </table>
   </div>
+  {% endif %}
 </div>
 
 </body>
