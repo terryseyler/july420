@@ -4,3 +4,4 @@ __pycache__/app.cpython-36.pyc
 *.ipynb
 *.pyc
 DB/july420.db
+*.db
