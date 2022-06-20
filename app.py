@@ -88,16 +88,16 @@ def index():
     data_2020 = cursor.execute("""select * from july420 where year = '2020'""").fetchall()
 
     data_2021 = cursor.execute("""select * from july420 where year = '2021'""").fetchall()
-    data_2022 = cursor.execute("""select Song
-                    ,Band
+    data_2022 = cursor.execute("""select upper(Song) as Song
+                    ,upper(Band) as Band
                     ,datetime(datetime,'-4 hours') as datetime
-                    ,421 - ROW_NUMBER() OVER (ORDER BY datetime) as Rank
+                    ,ROW_NUMBER() OVER (ORDER BY datetime desc) as Rank
                     from july2022
                     where datetime(datetime,'-4 hours') between '2021-07-01 10:00:00' and '2022-07-01 19:00:00'
                         or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
                         or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
                         or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
-                   order by datetime
+                   order by datetime desc
                    limit 420
                 """).fetchall()
 
@@ -122,19 +122,23 @@ def song_search():
                                         and Song like '%{0}%'
                                         """.format(song)
                                         ).fetchall()
-            data_2022 = cursor.execute("""select Song
-                            ,Band
+            data_2022 = cursor.execute("""with ranks as
+                                (
+                                select upper(Song) as Song
+                            ,upper(Band) as Band
                             ,datetime(datetime,'-4 hours') as datetime
-                            ,421 - ROW_NUMBER() OVER (ORDER BY datetime) as Rank
+                            ,ROW_NUMBER() OVER (ORDER BY datetime desc) as Rank
                             from july2022
                             where (datetime(datetime,'-4 hours') between '2021-07-01 10:00:00' and '2022-07-01 19:00:00'
                                 or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
                                 or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
                                 or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
                                 )
-                        and Song like '%{0}%'
-                           order by datetime
+
+                           order by datetime desc
                            limit 420
+                           )
+                         select * from ranks where Song like '%{}%'
                         """.format(song)
                         ).fetchall()
 
@@ -156,19 +160,23 @@ def song_search():
                                         and Band like '%{0}%'
                                         """.format(band)
                                         ).fetchall()
-            data_2022 = cursor.execute("""select Song
-                            ,Band
+            data_2022 = cursor.execute("""with ranks as
+                                (
+                                select upper(Song) as Song
+                            ,upper(Band) as Band
                             ,datetime(datetime,'-4 hours') as datetime
-                            ,421 - ROW_NUMBER() OVER (ORDER BY datetime) as Rank
+                            ,ROW_NUMBER() OVER (ORDER BY datetime desc) as Rank
                             from july2022
                             where (datetime(datetime,'-4 hours') between '2021-07-01 10:00:00' and '2022-07-01 19:00:00'
                                 or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
                                 or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
                                 or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
                                 )
-                        and Band like '%{0}%'
-                           order by datetime
+
+                           order by datetime desc
                            limit 420
+                           )
+                         select * from ranks where Band like '%{}%'
                         """.format(band)
                         ).fetchall()
             return render_template('index.html',data_2020=data_2020,data_2021=data_2021,data_2022=data_2022)
