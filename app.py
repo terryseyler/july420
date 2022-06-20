@@ -80,7 +80,7 @@ def make_agg_plot(year):
     p.vbar(x=df['Band'].head(10), top=df['volume'].head(10), width=0.9)
     p.xaxis.major_label_orientation = math.pi/4
     return p
-@app.route('/')
+@app.route('/july420')
 def index():
     conn,engine = create_connection()
     cursor=conn.cursor()
@@ -106,7 +106,7 @@ def index():
 
     return render_template('index.html',data_2020=data_2020,data_2021=data_2021,data_2022=data_2022)
 
-@app.route("/",methods=['POST'])
+@app.route("/july420",methods=['POST'])
 def song_search():
     if request.method=='POST':
         if request.form['submit_button'] == 'Search Song':
@@ -186,26 +186,41 @@ def song_search():
         if request.form['submit_button'] == 'Reset':
             return redirect(url_for('index'))
 
-@app.route('/2022')
+@app.route('/')
 def twentytwentytwo():
     conn,engine=create_connection()
     cursor=conn.cursor()
-
-    #print("max date is {}".format(max_date[0][0]))
-    #print("now is {}".format(datetime.now()))
-    #time_obj = datetime.strptime(max_date[0][0],"%Y-%m-%d %H:%M:%S")
-    #dif = datetime.now() - time_obj
-    #if (dif.total_seconds()/60) > 3:
-        #print("Greater than 3 minutes, pulling data")
-        #pull_songs()
-    #else:
-        #print("data up to date")
     distinct_dates = cursor.execute("select distinct date(datetime(datetime,'-4 hours')) as distinct_date from july2022 order by datetime desc").fetchall()
-    data_2022=cursor.execute("""select DateTime,time(datetime(datetime,'-4 hours')) as song_time,Song,Band,datetime(DateTime,'-4 hours') as DateTime_Fixed,date(datetime(DateTime,'-4 hours')) as DatePart,LIKE from july2022 order by DateTime desc""").fetchall()
+    data_2022=cursor.execute("""with ranks as
+                                (select upper(Song) as Song
+                                ,upper(Band) as Band
+                                ,datetime
+                                ,421 - ROW_NUMBER() OVER (ORDER BY datetime) as Rank
+                                from july2022
+                                where datetime(datetime,'-4 hours') between '2022-07-01 10:00:00' and '2022-07-01 19:00:00'
+                                    or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
+                                    or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
+                                    or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
+                               order by datetime
+                               limit 420
+                               )
+                    select july2022.DateTime
+                                    ,time(datetime(july2022.datetime,'-4 hours')) as song_time
+                                    ,july2022.Song
+                                    ,july2022.Band
+                                    ,datetime(july2022.DateTime,'-4 hours') as DateTime_Fixed
+                                    ,date(datetime(july2022.DateTime,'-4 hours')) as DatePart
+                                    ,july2022.LIKE
+                                    ,ranks.Rank
+                    from july2022
+                    left join ranks
+                    on ranks.datetime=july2022.datetime
+
+                                order by july2022.DateTime desc""").fetchall()
 
     return render_template('2022.html',data_2022=data_2022,distinct_dates=distinct_dates)
 
-@app.route('/2022',methods=['POST','GET'])
+@app.route('/',methods=['POST','GET'])
 def add_song():
     conn,engine=create_connection()
     cursor=conn.cursor()
@@ -246,16 +261,32 @@ def add_song():
                                             where Song like '%{0}%'
                                             order by datetime desc""".format(song)
                                             ).fetchall()
-            data_2022=cursor.execute("""select DateTime
-                                            ,time(datetime(datetime,'-4 hours')) as song_time
-                                            ,Song
-                                            ,Band
-                                            ,datetime(DateTime,'-4 hours') as DateTime_Fixed
-                                            ,date(datetime(DateTime,'-4 hours')) as DatePart
-                                            ,LIKE
-                                            from july2022
-                                        where Song like '%{0}%'
-                                        order by DateTime desc
+            data_2022=cursor.execute("""with ranks as
+                                        (select upper(Song) as Song
+                                        ,upper(Band) as Band
+                                        ,datetime
+                                        ,421 - ROW_NUMBER() OVER (ORDER BY datetime) as Rank
+                                        from july2022
+                                        where datetime(datetime,'-4 hours') between '2022-07-01 10:00:00' and '2022-07-01 19:00:00'
+                                            or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
+                                            or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
+                                            or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
+                                       order by datetime
+                                       limit 420
+                                       )
+                            select july2022.DateTime
+                                            ,time(datetime(july2022.datetime,'-4 hours')) as song_time
+                                            ,july2022.Song
+                                            ,july2022.Band
+                                            ,datetime(july2022.DateTime,'-4 hours') as DateTime_Fixed
+                                            ,date(datetime(july2022.DateTime,'-4 hours')) as DatePart
+                                            ,july2022.LIKE
+                                            ,ranks.Rank
+                            from july2022
+                            left join ranks
+                            on ranks.datetime=july2022.datetime
+                            where july2022.song like '%{0}%'
+                                        order by july2022.DateTime desc
                                         """.format(song)
                                         ).fetchall()
 
@@ -269,19 +300,68 @@ def add_song():
                                 where Band like '%{0}%'
                                 order by datetime desc""".format(band)
                                 ).fetchall()
-            data_2022=cursor.execute("""select DateTime
-                                            ,time(datetime(datetime,'-4 hours')) as song_time
-                                            ,Song
-                                            ,Band
-                                            ,datetime(DateTime,'-4 hours') as DateTime_Fixed
-                                            ,date(datetime(DateTime,'-4 hours')) as DatePart
-                                            ,LIKE
-                                            from july2022
-                                        where Band like '%{0}%'
-                                        order by DateTime desc
+            data_2022=cursor.execute("""with ranks as
+                                        (select upper(Song) as Song
+                                        ,upper(Band) as Band
+                                        ,datetime
+                                        ,421 - ROW_NUMBER() OVER (ORDER BY datetime) as Rank
+                                        from july2022
+                                        where datetime(datetime,'-4 hours') between '2022-07-01 10:00:00' and '2022-07-01 19:00:00'
+                                            or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
+                                            or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
+                                            or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
+                                       order by datetime
+                                       limit 420
+                                       )
+                            select july2022.DateTime
+                                            ,time(datetime(july2022.datetime,'-4 hours')) as song_time
+                                            ,july2022.Song
+                                            ,july2022.Band
+                                            ,datetime(july2022.DateTime,'-4 hours') as DateTime_Fixed
+                                            ,date(datetime(july2022.DateTime,'-4 hours')) as DatePart
+                                            ,july2022.LIKE
+                                            ,ranks.Rank
+                            from july2022
+                            left join ranks
+                            on ranks.datetime=july2022.datetime
+                            where july2022.band like '%{0}%'
+                                        order by july2022.DateTime desc
                                         """.format(band)
                                         ).fetchall()
             return render_template('2022.html',data_2022=data_2022,distinct_dates=distinct_dates)
+        elif request.form['submit_button'] == 'July 420 Filter':
+            conn,engine=create_connection()
+            cursor=conn.cursor()
+            distinct_dates = cursor.execute("select distinct date(datetime(datetime,'-4 hours')) as distinct_date from  july2022 order by datetime desc").fetchall()
+            data_2022=cursor.execute("""with ranks as
+                                        (select upper(Song) as Song
+                                        ,upper(Band) as Band
+                                        ,datetime
+                                        ,421 - ROW_NUMBER() OVER (ORDER BY datetime) as Rank
+                                        from july2022
+                                        where datetime(datetime,'-4 hours') between '2022-07-01 10:00:00' and '2022-07-01 19:00:00'
+                                            or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
+                                            or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
+                                            or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
+                                       order by datetime
+                                       limit 420
+                                       )
+                            select july2022.DateTime
+                                            ,time(datetime(july2022.datetime,'-4 hours')) as song_time
+                                            ,july2022.Song
+                                            ,july2022.Band
+                                            ,datetime(july2022.DateTime,'-4 hours') as DateTime_Fixed
+                                            ,date(datetime(july2022.DateTime,'-4 hours')) as DatePart
+                                            ,july2022.LIKE
+                                            ,ranks.Rank
+                            from july2022
+                            inner join ranks
+                            on ranks.datetime=july2022.datetime
+
+                                        order by july2022.DateTime desc""").fetchall()
+
+            return render_template('2022.html',data_2022=data_2022,distinct_dates=distinct_dates)
+
     return redirect(url_for('twentytwentytwo'))
 
 @app.route('/delete/<int:Rank>')

@@ -2,11 +2,16 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <html>
 <head>
-<span>
-{% for max_date in max_date %}
-<h1>Songs Played as of {{max_date['max_date']}}</h1>
-{% endfor %}
-<a href="{{url_for('index')}}">Back</a>
+
+<h1>Recently Played Songs</h1>
+
+<nav>
+  <ul>
+    <li> <a href="{{ url_for('twentytwentytwo') }}">Recently Played</a></li>
+    <li> <a href="{{ url_for('index') }}">July420 Comparison</a></li>
+    <li> <a href="{{ url_for('plot') }}">Plots</a></li>
+  </ul>
+</nav>
 </head>
 <!--<button class="open-button" onclick="openForm()">Add Song</button>-->
 <div class="form">
@@ -16,6 +21,7 @@
 <input class="btn" type="submit" name="submit_button" value="Search Song">
 <input type="text" name="band" id="band" placeholder="Search for a band...">
 <input class="btn" type="submit" name="submit_button" value="Search Band">
+<input class="btn" type="submit" name="submit_button" value="July 420 Filter">
 <input class="btn" type="submit" name="submit_button" value="Reset">
 </form>
 </span>
@@ -42,7 +48,11 @@
 {% for song in data_2022 %}
 {% if song['DatePart'] == distinct_date['distinct_date'] %}
   <tr>
-    <td width="30%"> {{ song['Song'] }} </td>
+    {% if song['Rank'] %}
+    <td width="30%">{{ song['Rank'] }} - {{ song['Song'] }} </td>
+    {% else %}
+    <td width="30%">{{ song['Song'] }} </td>
+{% endif %}
     <td width="30%"> {{ song['Band'] }} </td>
     <td width="10%"><a href="{{url_for('like',DateTime=song['DateTime'])}}">	&#128077; </a></td>
     <td width="10%"> {{ song['LIKE'] }}</td>
