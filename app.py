@@ -88,8 +88,20 @@ def index():
     data_2020 = cursor.execute("""select * from july420 where year = '2020'""").fetchall()
 
     data_2021 = cursor.execute("""select * from july420 where year = '2021'""").fetchall()
+    data_2022 = cursor.execute("""select Song
+                    ,Band
+                    ,datetime(datetime,'-4 hours') as datetime
+                    ,421 - ROW_NUMBER() OVER (ORDER BY datetime) as Rank
+                    from july2022
+                    where datetime(datetime,'-4 hours') between '2021-07-01 10:00:00' and '2022-07-01 19:00:00'
+                        or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
+                        or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
+                        or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
+                   order by datetime
+                   limit 420
+                """).fetchall()
 
-    return render_template('index.html',data_2020=data_2020,data_2021=data_2021)
+    return render_template('index.html',data_2020=data_2020,data_2021=data_2021,data_2022=data_2022)
 
 @app.route("/",methods=['POST'])
 def song_search():
@@ -110,8 +122,23 @@ def song_search():
                                         and Song like '%{0}%'
                                         """.format(song)
                                         ).fetchall()
+            data_2022 = cursor.execute("""select Song
+                            ,Band
+                            ,datetime(datetime,'-4 hours') as datetime
+                            ,421 - ROW_NUMBER() OVER (ORDER BY datetime) as Rank
+                            from july2022
+                            where (datetime(datetime,'-4 hours') between '2021-07-01 10:00:00' and '2022-07-01 19:00:00'
+                                or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
+                                or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
+                                or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
+                                )
+                        and Song like '%{0}%'
+                           order by datetime
+                           limit 420
+                        """.format(song)
+                        ).fetchall()
 
-            return render_template('index.html',data_2020=data_2020,data_2021=data_2021)
+            return render_template('index.html',data_2020=data_2020,data_2021=data_2021,data_2022=data_2022)
 
         elif request.form['submit_button'] == 'Search Band':
             band=request.form['band']
@@ -129,8 +156,22 @@ def song_search():
                                         and Band like '%{0}%'
                                         """.format(band)
                                         ).fetchall()
-
-            return render_template('index.html',data_2020=data_2020,data_2021=data_2021)
+            data_2022 = cursor.execute("""select Song
+                            ,Band
+                            ,datetime(datetime,'-4 hours') as datetime
+                            ,421 - ROW_NUMBER() OVER (ORDER BY datetime) as Rank
+                            from july2022
+                            where (datetime(datetime,'-4 hours') between '2021-07-01 10:00:00' and '2022-07-01 19:00:00'
+                                or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
+                                or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
+                                or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
+                                )
+                        and Band like '%{0}%'
+                           order by datetime
+                           limit 420
+                        """.format(band)
+                        ).fetchall()
+            return render_template('index.html',data_2020=data_2020,data_2021=data_2021,data_2022=data_2022)
         if request.form['submit_button'] == 'Reset':
             return redirect(url_for('index'))
 

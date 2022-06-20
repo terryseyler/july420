@@ -48,6 +48,18 @@
   {% endfor %}
   </table>
   </div>
+  <div class="column">
+  <h2>2022</h2>
+  <table>
+  {% for song in data_2022 %}
+  <tr>
+    <td> {{ song['Rank'] }} </td>
+    <td> {{ song['song'] }} </td>
+    <td> {{ song['band'] }} </td>
+  </tr>
+  {% endfor %}
+  </table>
+  </div>
 </div>
 
 </body>
