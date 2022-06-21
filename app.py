@@ -332,7 +332,13 @@ def add_song():
         elif request.form['submit_button'] == 'July 420 Filter':
             conn,engine=create_connection()
             cursor=conn.cursor()
-            distinct_dates = cursor.execute("select distinct date(datetime(datetime,'-4 hours')) as distinct_date from  july2022 order by datetime desc").fetchall()
+            distinct_dates = cursor.execute("""select distinct date(datetime(datetime,'-4 hours')) as distinct_date
+                                                    from  july2022
+                                                     where datetime(datetime,'-4 hours') between '2022-07-01 10:00:00' and '2022-07-01 19:00:00'
+                                                        or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
+                                                        or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
+                                                        or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
+                                                    order by datetime desc""").fetchall()
             data_2022=cursor.execute("""with ranks as
                                         (select upper(Song) as Song
                                         ,upper(Band) as Band
