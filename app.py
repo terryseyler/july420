@@ -402,36 +402,39 @@ def dislike(DateTime):
     conn.close()
     return redirect(url_for('twentytwentytwo'))
 
-@app.route('/song/<trackid>')
+@app.route('/song/<trackid>',methods=['GET','POST'])
 def song_page(trackid):
+
+    if  request.method=='POST':
+        print(request.method)
+        print('starting')
+        trackid = request.form.get('trackid')
+        print("got trackid")
+        band = request.form.get('band')
+        song = request.form.get('song')
+        print("starting")
+        conn,engine=create_connection()
+        cursor=conn.cursor()
+        print("connected")
+        comment = request.form.get('comment')
+        print("got comment")
+        author = request.form.get('author')
+
+        print("Printing the stuff")
+        print("{0} {1} {2} {3} {4}".format(comment,author,trackid,song,band))
+        conn.execute('INSERT INTO comments (comment,author,DateTime,trackid)'
+             'VALUES (?, ?, ?, ?)',
+                (comment,author,datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"),trackid)
+                    )
+        conn.commit()
+        conn.close()
+        return redirect(url_for('song_page',trackid=trackid))
     conn,engine=create_connection()
     cursor=conn.cursor()
     song=cursor.execute("select sum(Like) as Like,Song,band,trackid from july2022 where trackid='{0}'".format(trackid)).fetchone()
-    return render_template('song.html',song=song)
+    comments = cursor.execute("select *,date(datetime) as datetime_fixed from comments where trackid='{}' order by datetime desc".format(trackid)).fetchall()
+    return render_template('song.html',song=song,comments=comments)
 
-@app.route('/comment',methods=['GET','POST'])
-def add_comment():
-    print('starting')
-    #trackid = request.form['trackid']
-    print("starting")
-    conn,engine=create_connection()
-    cursor=conn.cursor()
-    print("connected")
-    comment = request.form['comment']
-    print("got comment")
-    author = request.form['author']
-
-    print("Printing the stuff")
-    print("{0} {1} {2}".format(comment,author,trackid))
-    conn.execute('INSERT INTO comments (comment,author,DateTime,trackid)'
-         'VALUES (?, ?, ?, ?)',
-            (comment,author,datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"),trackid)
-                )
-    song=cursor.execute("select sum(Like) as Like,Song,band,trackid from july2022 where trackid='{0}'".format(trackid)).fetchone()
-
-    conn.commit()
-    conn.close()
-    return render_template('song.html',song=song)
 
 @app.route('/plot')
 def plot():

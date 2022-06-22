@@ -20,11 +20,18 @@
 <form method="POST">
 <input type="text" name="author" id="author" placeholder="Who are you?...">
 <input type="text" name="comment" id="comment" placeholder="Comment on the song...">
-<a href="{{ url_for('add_comment')}}"> add comment</a>
+<input class="btn" type="submit" name="submit_button" value="Add Comment">
+<input type="hidden" id="trackid" name="trackid" value="{{ song['trackid'] }}"]>
+<input type="hidden" id="song" name="song" value="{{ song['Song'] }}">
+<input type="hidden" id="band" name="band" value="{{ song['Band'] }}">
 
 </form>
 
 
 </span>
+
 </div>
-<input type="hidden" id="trackid" name="trackid" value=song['trackid']>
+
+{% for comment in comments %}
+<p>{{comment['comment'] }} - {{comment['author']}} {{comment['datetime_fixed']}}</p>
+{% endfor %}
