@@ -32,6 +32,12 @@
 
 </div>
 
+
+<table>
 {% for comment in comments %}
-<p>{{comment['comment'] }} - {{comment['author']}} {{comment['datetime_fixed']}}</p>
+<tr>
+<td width ="70%"> {{comment['comment'] }} </td>
+<td width ="30%"> {{comment['author']}} {{comment['datetime_fixed']}}</td>
+</tr>
 {% endfor %}
+</table>
