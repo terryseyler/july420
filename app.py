@@ -195,6 +195,7 @@ def twentytwentytwo():
                                 (select upper(Song) as Song
                                 ,upper(Band) as Band
                                 ,datetime
+                                ,trackid
                                 ,421 - ROW_NUMBER() OVER (ORDER BY datetime) as Rank
                                 from july2022
                                 where datetime(datetime,'-4 hours') between '2022-07-01 10:00:00' and '2022-07-01 19:00:00'
@@ -208,6 +209,7 @@ def twentytwentytwo():
                                     ,time(datetime(july2022.datetime,'-4 hours')) as song_time
                                     ,july2022.Song
                                     ,july2022.Band
+                                    ,july2022.trackid
                                     ,datetime(july2022.DateTime,'-4 hours') as DateTime_Fixed
                                     ,date(datetime(july2022.DateTime,'-4 hours')) as DatePart
                                     ,july2022.LIKE
@@ -277,6 +279,7 @@ def add_song():
                             select july2022.DateTime
                                             ,time(datetime(july2022.datetime,'-4 hours')) as song_time
                                             ,july2022.Song
+                                                ,july2022.trackid
                                             ,july2022.Band
                                             ,datetime(july2022.DateTime,'-4 hours') as DateTime_Fixed
                                             ,date(datetime(july2022.DateTime,'-4 hours')) as DatePart
@@ -320,6 +323,7 @@ def add_song():
                                             ,datetime(july2022.DateTime,'-4 hours') as DateTime_Fixed
                                             ,date(datetime(july2022.DateTime,'-4 hours')) as DatePart
                                             ,july2022.LIKE
+                                                ,july2022.trackid
                                             ,ranks.Rank
                             from july2022
                             left join ranks
@@ -397,6 +401,37 @@ def dislike(DateTime):
     conn.commit()
     conn.close()
     return redirect(url_for('twentytwentytwo'))
+
+@app.route('/song/<trackid>')
+def song_page(trackid):
+    conn,engine=create_connection()
+    cursor=conn.cursor()
+    song=cursor.execute("select sum(Like) as Like,Song,band,trackid from july2022 where trackid='{0}'".format(trackid)).fetchone()
+    return render_template('song.html',song=song)
+
+@app.route('/comment',methods=['GET','POST'])
+def add_comment():
+    print('starting')
+    #trackid = request.form['trackid']
+    print("starting")
+    conn,engine=create_connection()
+    cursor=conn.cursor()
+    print("connected")
+    comment = request.form['comment']
+    print("got comment")
+    author = request.form['author']
+
+    print("Printing the stuff")
+    print("{0} {1} {2}".format(comment,author,trackid))
+    conn.execute('INSERT INTO comments (comment,author,DateTime,trackid)'
+         'VALUES (?, ?, ?, ?)',
+            (comment,author,datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"),trackid)
+                )
+    song=cursor.execute("select sum(Like) as Like,Song,band,trackid from july2022 where trackid='{0}'".format(trackid)).fetchone()
+
+    conn.commit()
+    conn.close()
+    return render_template('song.html',song=song)
 
 @app.route('/plot')
 def plot():

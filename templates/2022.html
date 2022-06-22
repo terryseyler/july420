@@ -52,9 +52,9 @@
     {% if song['Rank'] %}
         <td width="30%">{{ song['Rank'] }} - {{ song['Song'] }} </td>
     {% else %}
-        <td width="30%">{{ song['Song'] }} </td>
+        <td width="30%"><a href="{{url_for('song_page',trackid=song['trackid'])}}"> {{ song['Song'] }} </a></td>
     {% endif %}
-    <td width="30%"> {{ song['Band'] }} </td>
+    <td width="30%">{{ song['Band'] }} </td>
     <td width="10%"><a href="{{url_for('like',DateTime=song['DateTime'])}}">	&#128077; </a></td>
     <td width="10%"> {{ song['LIKE'] }}</td>
     <td width="10%"><a href="{{url_for('dislike',DateTime=song['DateTime'])}}"> 	&#128078; </td>
