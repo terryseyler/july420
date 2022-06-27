@@ -210,6 +210,7 @@ def twentytwentytwo():
                                     ,july2022.Song
                                     ,july2022.Band
                                     ,july2022.trackid
+                                    ,july2022.artistid
                                     ,datetime(july2022.DateTime,'-4 hours') as DateTime_Fixed
                                     ,date(datetime(july2022.DateTime,'-4 hours')) as DatePart
                                     ,july2022.LIKE
@@ -284,6 +285,7 @@ def add_song():
                                             ,datetime(july2022.DateTime,'-4 hours') as DateTime_Fixed
                                             ,date(datetime(july2022.DateTime,'-4 hours')) as DatePart
                                             ,july2022.LIKE
+                                            ,july2022.artistid
                                             ,ranks.Rank
                             from july2022
                             left join ranks
@@ -324,6 +326,7 @@ def add_song():
                                             ,date(datetime(july2022.DateTime,'-4 hours')) as DatePart
                                             ,july2022.LIKE
                                                 ,july2022.trackid
+                                                ,july2022.artistid
                                             ,ranks.Rank
                             from july2022
                             left join ranks
@@ -363,6 +366,8 @@ def add_song():
                                             ,datetime(july2022.DateTime,'-4 hours') as DateTime_Fixed
                                             ,date(datetime(july2022.DateTime,'-4 hours')) as DatePart
                                             ,july2022.LIKE
+                                            ,july2022.trackid
+                                            ,july2022.artistid
                                             ,ranks.Rank
                             from july2022
                             inner join ranks
@@ -422,9 +427,9 @@ def song_page(trackid):
 
         print("Printing the stuff")
         print("{0} {1} {2} {3} {4}".format(comment,author,trackid,song,band))
-        conn.execute('INSERT INTO comments (comment,author,DateTime,trackid)'
-             'VALUES (?, ?, ?, ?)',
-                (comment,author,datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"),trackid)
+        conn.execute('INSERT INTO comments (comment,author,DateTime,trackid,comment_type)'
+             'VALUES (?, ?, ?, ?, ?)',
+                (comment,author,datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"),trackid,"song")
                     )
         conn.commit()
         conn.close()
@@ -432,8 +437,43 @@ def song_page(trackid):
     conn,engine=create_connection()
     cursor=conn.cursor()
     song=cursor.execute("select sum(Like) as Like,Song,band,trackid from july2022 where trackid='{0}'".format(trackid)).fetchone()
-    comments = cursor.execute("select *,date(datetime) as datetime_fixed from comments where trackid='{}' order by datetime desc".format(trackid)).fetchall()
+    comments = cursor.execute("select *,date(datetime) as datetime_fixed from comments where trackid='{}' and comment_type = 'song' order by datetime desc".format(trackid)).fetchall()
     return render_template('song.html',song=song,comments=comments)
+
+@app.route('/artist/<artistid>',methods=['GET','POST'])
+def artist_page(artistid):
+
+    if  request.method=='POST':
+        print(request.method)
+        print('starting')
+        artistid = request.form.get('artistid')
+        print("got trackid")
+        band = request.form.get('band')
+
+        print("starting")
+        conn,engine=create_connection()
+        cursor=conn.cursor()
+        print("connected")
+        comment = request.form.get('comment')
+        print("got comment")
+        author = request.form.get('author')
+
+        print("Printing the stuff")
+        print("{0} {1} {2} {3}".format(comment,author,artistid,band))
+        conn.execute('INSERT INTO comments (comment,author,DateTime,artistid,comment_type)'
+             'VALUES (?, ?, ?, ?, ?)',
+                (comment,author,datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"),artistid,"artist")
+                    )
+        conn.commit()
+        conn.close()
+        return redirect(url_for('artist_page',artistid=artistid))
+
+    conn,engine=create_connection()
+    cursor=conn.cursor()
+    artist=cursor.execute("select sum(Like) as Like,band,artistid from july2022 where artistid='{0}'".format(artistid)).fetchone()
+    comments = cursor.execute("select *,date(datetime) as datetime_fixed from comments where artistid='{}' and comment_type = 'artist' order by datetime desc".format(artistid)).fetchall()
+    most_played = cursor.execute("select count(*) as counts,song from july2022 where artistid = '{}' group by song order by count(*) desc limit 3".format(artistid)).fetchall()
+    return render_template('artist.html',artist=artist,comments=comments,most_played=most_played)
 
 
 @app.route('/plot')
