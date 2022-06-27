@@ -50,11 +50,11 @@
 {% if song['DatePart'] == distinct_date['distinct_date'] %}
   <tr>
     {% if song['Rank'] %}
-        <td width="30%">{{ song['Rank'] }} - {{ song['Song'] }} </td>
+        <td width="30%"><a href="{{url_for('song_page',trackid=song['trackid'])}}">{{ song['Rank'] }} - {{ song['Song'] }}</a> </td>
     {% else %}
         <td width="30%"><a href="{{url_for('song_page',trackid=song['trackid'])}}"> {{ song['Song'] }} </a></td>
     {% endif %}
-    <td width="30%">{{ song['Band'] }} </td>
+    <td width="30%"><a href="{{url_for('artist_page',artistid=song['artistid'])}}">{{ song['Band'] }} </a></td>
     <td width="10%"><a href="{{url_for('like',DateTime=song['DateTime'])}}">	&#128077; </a></td>
     <td width="10%"> {{ song['LIKE'] }}</td>
     <td width="10%"><a href="{{url_for('dislike',DateTime=song['DateTime'])}}"> 	&#128078; </td>
