@@ -5,7 +5,6 @@ import sqlite3
 from sqlite3 import Error
 from sqlalchemy import create_engine
 import math
-from jinja2 import Template
 import json
 from bokeh.embed import json_item
 from bokeh.plotting import figure
@@ -13,9 +12,8 @@ from bokeh.resources import CDN
 from bokeh.sampledata.iris import flowers
 import pandas as pd
 app= Flask(__name__)
-from flask import current_app, g
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for
+    flash, redirect, render_template, request, url_for
 )
 from datetime import datetime
 #https://us.api.iheart.com/api/v3/live-meta/stream/2033/currentTrackMeta?defaultMetadata=true
@@ -190,7 +188,7 @@ def song_search():
 def twentytwentytwo():
     conn,engine=create_connection()
     cursor=conn.cursor()
-    distinct_dates = cursor.execute("select distinct date(datetime(datetime,'-4 hours')) as distinct_date from july2022 order by datetime desc").fetchall()
+    distinct_dates = cursor.execute("select distinct date(datetime(datetime,'-4 hours')) as distinct_date from july2022  where date(datetime(july2022.DateTime,'-4 hours')) >= date(datetime('now','-4 hours'),'-1 days') order by datetime desc").fetchall()
     data_2022=cursor.execute("""with ranks as
                                 (select upper(Song) as Song
                                 ,upper(Band) as Band
@@ -218,8 +216,9 @@ def twentytwentytwo():
                     from july2022
                     left join ranks
                     on ranks.datetime=july2022.datetime
-
-                                order by july2022.DateTime desc""").fetchall()
+                    where date(datetime(july2022.DateTime,'-4 hours')) >= date(datetime('now','-4 hours'),'-1 days')
+                                order by july2022.DateTime desc
+                                """).fetchall()
 
     return render_template('2022.html',data_2022=data_2022,distinct_dates=distinct_dates)
 
