@@ -92,7 +92,7 @@ def index():
                                 ,datetime(datetime,'-4 hours') as datetime
                                 ,421 - ROW_NUMBER() OVER (ORDER BY datetime) as Rank
                                 from july2022
-                                where   datetime(datetime,'-4 hours') between '2022-07-01 10:00:00' and '2022-07-01 19:00:00'
+                                where   datetime(datetime,'-4 hours') between '2022-07-01 16:20:00' and '2022-07-01 19:00:00'
                                     or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
                                     or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
                                     or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
@@ -130,7 +130,7 @@ def song_search():
                             ,datetime(datetime,'-4 hours') as datetime
                             ,421 - ROW_NUMBER() OVER (ORDER BY datetime) as Rank
                             from july2022
-                            where  (datetime(datetime,'-4 hours') between '2022-07-01 10:00:00' and '2022-07-01 19:00:00'
+                            where  (datetime(datetime,'-4 hours') between '2022-07-01 16:20:00' and '2022-07-01 19:00:00'
                                 or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
                                 or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
                                 or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
@@ -168,7 +168,7 @@ def song_search():
                             ,datetime(datetime,'-4 hours') as datetime
                             ,421 - ROW_NUMBER() OVER (ORDER BY datetime) as Rank
                             from july2022
-                            where  (datetime(datetime,'-4 hours') between '2022-07-01 10:00:00' and '2022-07-01 19:00:00'
+                            where  (datetime(datetime,'-4 hours') between '2022-07-01 16:20:00' and '2022-07-01 19:00:00'
                                 or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
                                 or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
                                 or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
@@ -196,7 +196,7 @@ def twentytwentytwo():
                                 ,trackid
                                 ,421 - ROW_NUMBER() OVER (ORDER BY datetime) as Rank
                                 from july2022
-                                where   datetime(datetime,'-4 hours') between '2022-07-01 10:00:00' and '2022-07-01 19:00:00'
+                                where   datetime(datetime,'-4 hours') between '2022-07-01 16:20:00' and '2022-07-01 19:00:00'
                                     or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
                                     or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
                                     or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
@@ -269,7 +269,7 @@ def add_song():
                                         ,datetime
                                         ,421 - ROW_NUMBER() OVER (ORDER BY datetime) as Rank
                                         from july2022
-                                        where   datetime(datetime,'-4 hours') between '2022-07-01 10:00:00' and '2022-07-01 19:00:00'
+                                        where   datetime(datetime,'-4 hours') between '2022-07-01 16:20:00' and '2022-07-01 19:00:00'
                                             or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
                                             or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
                                             or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
@@ -310,7 +310,7 @@ def add_song():
                                         ,datetime
                                         ,421 - ROW_NUMBER() OVER (ORDER BY datetime) as Rank
                                         from july2022
-                                        where datetime(datetime,'-4 hours') between '2022-07-01 10:00:00' and '2022-07-01 19:00:00'
+                                          where datetime(datetime,'-4 hours') between '2022-07-01 16:20:00' and '2022-07-01 19:00:00'
                                             or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
                                             or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
                                             or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
@@ -340,7 +340,7 @@ def add_song():
             cursor=conn.cursor()
             distinct_dates = cursor.execute("""select distinct date(datetime(datetime,'-4 hours')) as distinct_date
                                                     from  july2022
-                                                     where datetime(datetime,'-4 hours') between '2022-07-01 10:00:00' and '2022-07-01 19:00:00'
+                                                     where datetime(datetime,'-4 hours') between '2022-07-01 16:20:00' and '2022-07-01 19:00:00'
                                                         or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
                                                         or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
                                                         or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
@@ -351,7 +351,7 @@ def add_song():
                                         ,datetime
                                         ,421 - ROW_NUMBER() OVER (ORDER BY datetime) as Rank
                                         from july2022
-                                        where datetime(datetime,'-4 hours') between '2022-07-01 10:00:00' and '2022-07-01 19:00:00'
+                                        where datetime(datetime,'-4 hours') between '2022-07-01 16:20:00' and '2022-07-01 19:00:00'
                                             or  datetime(datetime,'-4 hours') between '2022-07-02 10:00:00' and '2022-07-02 19:00:00'
                                             or  datetime(datetime,'-4 hours') between '2022-07-03 10:00:00' and '2022-07-03 19:00:00'
                                             or  datetime(datetime,'-4 hours') between '2022-07-04 10:00:00' and '2022-07-04 19:00:00'
